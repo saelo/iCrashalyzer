@@ -45,9 +45,9 @@ class Crash:
     def __eq__(self, other):
         #
         # two crashes are (very likely) equal if they occurred on the same
-        # device and same firmware and crash on the same instruction.
+        # offset from the same memory region
         #
-        return self.os == other.os and self.device == other.device and self.rpc == other.rpc and not self.rpc == '-'
+        return self.region == other.region and self.rpc == other.rpc and not self.region == '-' and not self.rpc == '-'
 
     def __str__(self):
         str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)

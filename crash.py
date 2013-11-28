@@ -20,6 +20,7 @@ class Crash:
 
     def __init__(self):
         # initialize available fields, mainly as a reference
+        self.id       = '-'         # crash id - 'Incident Identifier'
         self.domain   = '-'         # crash domain - kernel or userland
         self.arch     = '-'         # machine architecture
         self.fa       = '-'         # faulting address
@@ -34,4 +35,4 @@ class Crash:
         return False
 
     def __str__(self):
-        return "%s - %s, type: %s, process: %s, faulting address: %s pc: %s -- %s" % (self.domain, self.arch, self.type, self.process, self.fa, self.pc, self.filename)
+        return "%s - %s, type: %s, process: %s, faulting address: %s pc: %s -- %s id: %s" % (self.domain, self.arch, self.type, self.process, self.fa, self.pc, self.filename, self.id)

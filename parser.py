@@ -11,11 +11,15 @@ import re
 
 class CrashParser:
 
+    """ Shared regular expressions """
+    srx = [
+       re.compile('^Incident Identifier:\s*(?P<id>[0-9a-fA-F-]*)', re.MULTILINE),
+       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE)
+          ]
 
     """ Userland regular expressions """
     urx = [
        re.compile('^Process:\s*(?P<process>.*) \[(?P<pid>[0-9]*)\]', re.MULTILINE),
-       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
        re.compile('^Exception Type:\s*(.*) \((?P<type>.*)\)', re.MULTILINE),
        re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE),
        re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
@@ -23,7 +27,6 @@ class CrashParser:
 
     """ Kernel regular expressions """
     krx = [
-       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
        re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE),
        re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE),
        re.compile('^Kernel text base: (?P<kbase>[0-9a-fA-Fx]*)', re.MULTILINE)
@@ -52,12 +55,14 @@ class CrashParser:
             rx = self.urx
 
         # extract relevant information
-        for regex in rx:
+        for regex in rx + self.srx:
             match = regex.search(crashlog)
             if match:
                 # add attributes to crash object
                 for key, value in match.groupdict().iteritems():
                     setattr(crash, key, value)
+            else:
+                print("[!] failed to extract some information, please report this")
 
         return crash
 

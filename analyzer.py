@@ -15,8 +15,11 @@ class CrashAnalyzer:
 
     def process(self, crash):
         # check for null pointer
-        if int(crash.fa, 16) < self.NULLPTR_THRESHOLD:
-            crash.type = Crash.NULLPTR
+        try:
+            if int(crash.fa, 16) < self.NULLPTR_THRESHOLD:
+                crash.type = Crash.NULLPTR
+        except ValueError:
+            pass
 
         # check architecture
         if len(crash.fa) <= 10:

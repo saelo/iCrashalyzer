@@ -33,20 +33,20 @@ class CrashParser:
           ]
 
 
-    def analyze(self, crashlog):
+    def process(self, report):
         crash = Crash()
 
-        if '<key>' in crashlog:
+        if '<key>' in report:
             # xml file, extract description first
             regex = re.compile('.*<key>description</key>\s*<string>(?P<desc>.*?)</string>.*', re.DOTALL)
-            match = regex.match(crashlog)
+            match = regex.match(report)
             if match:
-                crashlog = match.group('desc')
+                report = match.group('desc')
             else:
                 print("[!] failed to extract description from xml file, parsing might fail")
 
         # determine if it's a userland or kernel crash
-        if 'Kernel version' in crashlog:
+        if 'Kernel version' in report:
             crash.domain = Crash.KERNEL
             crash.type = Crash.KFAULT       # set type to generic kernel fault
             rx = self.krx
@@ -56,7 +56,7 @@ class CrashParser:
 
         # extract relevant information
         for regex in rx + self.srx:
-            match = regex.search(crashlog)
+            match = regex.search(report)
             if match:
                 # add attributes to crash object
                 for key, value in match.groupdict().iteritems():
@@ -64,10 +64,4 @@ class CrashParser:
             else:
                 print("[!] failed to extract some information, please report this")
 
-        return crash
-
-    def process(self, f):
-        buf = f.read()
-        crash = self.analyze(buf)
-        crash.filename = f.name
         return crash

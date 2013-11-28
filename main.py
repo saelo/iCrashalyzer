@@ -5,7 +5,6 @@
 #
 
 from crash import Crash
-from parser import CrashParser
 from analyzer import CrashAnalyzer
 import argparse 
 
@@ -18,7 +17,6 @@ parser.add_argument('-v', '--verbose', action='count', help='increases the verbo
 args = parser.parse_args()
 
 
-parser   = CrashParser()
 analyzer = CrashAnalyzer()
 crashes  = []
 curr     = 1
@@ -26,9 +24,7 @@ for entry in args.f:
     with open(entry, 'r') as file:
         print("[*] processing file %i of %i" % (curr, len(args.f)))
         curr += 1
-        crash = parser.process(file)
-        analyzer.process(crash)
-        crashes.append(crash)
+        crashes.append(analyzer.process(file))
 
 if args.unique:
     raise NotImplementedError("coming soon")

@@ -14,22 +14,22 @@ class CrashParser:
     """ Shared regular expressions """
     srx = [
        re.compile('^Incident Identifier:\s*(?P<id>[0-9a-fA-F-]*)', re.MULTILINE),
-       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE)
+       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
+       re.compile('^Hardware Model:\s*(?P<device>.*)', re.MULTILINE),
+       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
           ]
 
     """ Userland regular expressions """
     urx = [
        re.compile('^Process:\s*(?P<process>.*) \[(?P<pid>[0-9]*)\]', re.MULTILINE),
        re.compile('^Exception Type:\s*(.*) \((?P<type>.*)\)', re.MULTILINE),
-       re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE),
-       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
+       re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE)
           ]
 
     """ Kernel regular expressions """
     krx = [
-       re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE),
-       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE),
-       re.compile('^Kernel text base: (?P<kbase>[0-9a-fA-Fx]*)', re.MULTILINE)
+       re.compile('^Kernel text base: (?P<kbase>[0-9a-fA-Fx]*)', re.MULTILINE),
+       re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE)
           ]
 
 

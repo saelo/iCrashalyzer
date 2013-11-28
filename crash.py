@@ -7,6 +7,11 @@
 #
 
 class Crash:
+
+
+    """ Verbosity level - determines how much str(crash) spits out """
+    verbosity = 1
+
     """ Crash domain """
     KERNEL   = 'KERNEL'
     USERLAND = 'USERLAND'
@@ -23,8 +28,11 @@ class Crash:
         self.id       = '-'         # crash id - 'Incident Identifier'
         self.domain   = '-'         # crash domain - kernel or userland
         self.arch     = '-'         # machine architecture
+        self.os       = '-'         # operating system name
+        self.device   = '-'         # device name
         self.fa       = '-'         # faulting address
         self.pc       = '-'         # address of the faulting instruction
+        self.rpc      = '-'         # relative address of the faulting instruction
         self.kbase    = '-'         # kernel base address
         self.type     = '-'         # crash type, Null Pointer Dereference, SIGSEGV, ...
         self.process  = '-'         # faulting process
@@ -32,7 +40,16 @@ class Crash:
         
 
     def __eq__(self, other):
-        return False
+        #
+        # two crashes are (very likely) equal if they occurred on the same
+        # device and same firmware and crash on the same instruction.
+        #
+        return self.os == other.os and self.device == other.device and self.rpc == other.rpc and not self.rpc == '-'
 
     def __str__(self):
-        return "%s - %s, type: %s, process: %s, faulting address: %s pc: %s -- %s id: %s" % (self.domain, self.arch, self.type, self.process, self.fa, self.pc, self.filename, self.id)
+        str = "%s - %s, type: %s, process: %s, faulting address: %s pc: %s" % (self.domain, self.arch, self.type, self.process, self.fa, self.pc)
+        if self.verbosity > 1:
+            str += "\n    %s - %s" % (self.os, self.device)
+        if self.verbosity > 2:
+            str += "\n    %s -- crash id: %s" % (self.filename, self.id)
+        return str

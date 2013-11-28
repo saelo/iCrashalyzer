@@ -19,8 +19,11 @@ args = parser.parse_args()
 parser = CrashParser()
 analyzer = CrashAnalyzer()
 crashes = []
+curr = 1
 for entry in args.f:
     with open(entry, 'r') as file:
+        print("[*] processing file %i of %i" % (curr, len(args.f)))
+        curr += 1
         crash = parser.process(file)
         analyzer.process(crash)
         crashes.append(crash)

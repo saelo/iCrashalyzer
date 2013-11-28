@@ -17,13 +17,21 @@ class CrashParser:
        re.compile('^Process:\s*(?P<process>.*) \[(?P<pid>[0-9]*)\]', re.MULTILINE),
        re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
        re.compile('^Exception Type:\s*(.*) \((?P<type>.*)\)', re.MULTILINE),
-       re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE)
+       re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE),
+       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
+          ]
+
+    """ Kernel regular expressions """
+    krx = [
+       re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
+       re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE),
+       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE),
+       re.compile('^Kernel text base: (?P<kbase>[0-9a-fA-Fx]*)', re.MULTILINE)
           ]
 
 
-    def _analyze_userland(self, crashlog):
+    def analyze(self, crashlog):
         crash = Crash()
-        crash.domain = Crash.USERLAND
 
         if '<key>' in crashlog:
             # xml file, extract description first
@@ -33,8 +41,18 @@ class CrashParser:
                 crashlog = match.group('desc')
             else:
                 print("[!] failed to extract description from xml file, parsing might fail")
-        
-        for regex in self.urx:
+
+        # determine if it's a userland or kernel crash
+        if 'Kernel version' in crashlog:
+            crash.domain = Crash.KERNEL
+            crash.type = Crash.KFAULT       # set type to generic kernel fault
+            rx = self.krx
+        else:
+            crash.domain = Crash.USERLAND
+            rx = self.urx
+
+        # extract relevant information
+        for regex in rx:
             match = regex.search(crashlog)
             if match:
                 # add attributes to crash object
@@ -42,18 +60,6 @@ class CrashParser:
                     setattr(crash, key, value)
 
         return crash
-
-    def _analyze_kernel(self, crashlog):
-        crash = Crash()
-        crash.domain = Crash.KERNEL
-        return crash
-
-    def analyze(self, crashlog):
-        # determine if it's a userland or kernel crash
-        if 'Kernel version' in crashlog:
-            return self._analyze_kernel(crashlog)
-        else:
-            return self._analyze_userland(crashlog)
 
     def process(self, f):
         buf = f.read()

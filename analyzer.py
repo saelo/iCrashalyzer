@@ -20,6 +20,6 @@ class CrashAnalyzer:
 
         # check architecture
         if len(crash.fa) <= 10:
-            crash.arch = '32'
+            crash.arch = '32bit'
         else:
-            crash.arch = '64'
+            crash.arch = '64bit'

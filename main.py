@@ -27,7 +27,14 @@ for entry in args.f:
         crashes.append(analyzer.process(file))
 
 if args.unique:
-    raise NotImplementedError("coming soon")
+    unique_crashes = []
+    for crash in crashes:
+        if not crash in unique_crashes:
+            unique_crashes.append(crash)
+        else:
+            print("[*] %s is (likely) a duplicate of %s" % (crash.id, unique_crashes[unique_crashes.index(crash)].id))
+
+    crashes = unique_crashes
 
 if args.verbose:
     Crash.verbosity += args.verbose

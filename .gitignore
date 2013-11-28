@@ -1,0 +1,5 @@
+# ignore compiled python code
+*.pyc
+
+# ignore plist files
+*.plist

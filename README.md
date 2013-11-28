@@ -1,4 +1,4 @@
 iCrashalyzer
 ============
 
-Tool to analyze iOS crash logs.
+Tool to analyze iOS crash reports.

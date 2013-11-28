@@ -23,6 +23,9 @@ class Crash:
     SIGBUS  = 'SIBBUS'
     KFAULT  = 'KFAULT'      # basically every kernel panic that's not a null pointer dereference
 
+    """ Predefined memory regions """
+    REGION_KERNEL = "kernel base"
+
     def __init__(self):
         # initialize available fields, mainly as a reference
         self.id       = '-'         # crash id - 'Incident Identifier'
@@ -36,9 +39,9 @@ class Crash:
         self.kbase    = '-'         # kernel base address
         self.type     = '-'         # crash type, Null Pointer Dereference, SIGSEGV, ...
         self.process  = '-'         # faulting process
+        self.region   = '-'         # name of the memory region in which the crash occurred
         self.filename = '-'         # name of the crash report file
         
-
     def __eq__(self, other):
         #
         # two crashes are (very likely) equal if they occurred on the same
@@ -47,8 +50,13 @@ class Crash:
         return self.os == other.os and self.device == other.device and self.rpc == other.rpc and not self.rpc == '-'
 
     def __str__(self):
-        str = "%s - %s, type: %s, process: %s, faulting address: %s pc: %s" % (self.domain, self.arch, self.type, self.process, self.fa, self.pc)
+        str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)
         if self.verbosity > 1:
+            if self.domain == self.USERLAND:
+                str += "\n    process: %s, " % self.process
+            else:
+                str += "\n    "
+            str += "pc: %s, offset %s from %s" % (self.pc, self.rpc, self.region)
             str += "\n    %s - %s" % (self.os, self.device)
         if self.verbosity > 2:
             str += "\n    %s -- crash id: %s" % (self.filename, self.id)

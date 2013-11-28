@@ -40,7 +40,7 @@ for crash in crashes:
     if out:
         out.write(str(crash))
     else:
-        print(crash)
+        print('\n' + str(crash))
 
 if out:
     out.close()

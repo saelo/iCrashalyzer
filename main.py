@@ -6,7 +6,7 @@
 
 from crash import Crash
 from analyzer import CrashAnalyzer
-import argparse 
+import argparse
 
 
 parser = argparse.ArgumentParser(prog='iCrashalyzer', description='Analyze iOS crash reports.')

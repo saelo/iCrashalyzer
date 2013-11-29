@@ -12,7 +12,7 @@ import re
 
 class CrashAnalyzer:
 
-    
+
     NULLPTR_THRESHOLD = 0x1000
 
     parser = CrashParser()
@@ -56,8 +56,5 @@ class CrashAnalyzer:
                         crash.region = name
             except ValueError:
                 pass
-
-        if crash.rpc == '-':
-            print("[!] failed to calculate relative PC address, please report this")
 
         return crash

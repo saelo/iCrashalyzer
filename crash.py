@@ -21,6 +21,7 @@ class Crash:
     NULLPTR = 'NULLPTR'
     SIGABRT = 'SIGABRT'
     SIGBUS  = 'SIBBUS'
+    TIMEOUT = 'TIMEOUT'
     KFAULT  = 'KFAULT'      # basically every kernel panic that's not a null pointer dereference
 
     """ Predefined memory regions """
@@ -41,7 +42,7 @@ class Crash:
         self.process  = '-'         # faulting process
         self.region   = '-'         # name of the memory region in which the crash occurred
         self.filename = '-'         # name of the crash report file
-        
+
     def __eq__(self, other):
         #
         # two crashes are (very likely) equal if they occurred on the same
@@ -50,6 +51,8 @@ class Crash:
         return self.region == other.region and self.rpc == other.rpc and not self.region == '-' and not self.rpc == '-'
 
     def __str__(self):
+        if self.type == self.TIMEOUT:
+            return "%s - %s in %s" % (self.domain, self.type, self.process)
         str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)
         if self.verbosity > 1:
             if self.domain == self.USERLAND:

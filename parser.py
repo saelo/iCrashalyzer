@@ -11,13 +11,17 @@ import re
 
 class CrashParser:
 
-    """ Shared regular expressions """
-    srx = [
+    """ Global regular expressions """
+    grx = [
        re.compile('^Incident Identifier:\s*(?P<id>[0-9a-fA-F-]*)', re.MULTILINE),
        re.compile('^OS Version:\s*(?P<os>.*) \(.*\)', re.MULTILINE),
        re.compile('^Hardware Model:\s*(?P<device>.*)', re.MULTILINE),
-       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
           ]
+
+    """ Generic exception regular expressions """
+    erx = [
+       re.compile('^.*pc: (?P<pc>[0-9a-fA-Fx]*)', re.MULTILINE)
+          ] + grx
 
     """ Userland regular expressions """
     urx = [
@@ -45,17 +49,20 @@ class CrashParser:
             else:
                 print("[!] failed to extract description from xml file, parsing might fail")
 
-        # determine if it's a userland or kernel crash
-        if 'Kernel version' in report:
+        if 'RPCTimeout message received to terminate' in report:
+            crash.domain = Crash.USERLAND
+            crash.type = Crash.TIMEOUT
+            rx = self.grx + [re.compile('Reason:\s*(?P<process>\w*):')]
+        elif 'Kernel version' in report:
             crash.domain = Crash.KERNEL
             crash.type = Crash.KFAULT       # set type to generic kernel fault
-            rx = self.krx
+            rx = self.erx + self.krx
         else:
             crash.domain = Crash.USERLAND
-            rx = self.urx
+            rx = self.erx + self.urx
 
         # extract relevant information
-        for regex in rx + self.srx:
+        for regex in rx:
             match = regex.search(report)
             if match:
                 # add attributes to crash object

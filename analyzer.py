@@ -46,7 +46,7 @@ class CrashAnalyzer:
             try:
                 # try to find memory region
                 pc = int(crash.pc, 16)
-                regex = re.compile('0x(?P<lower>[0-9a-fA-F]*) - 0x(?P<upper>[0-9a-fA-F]*) (?P<name>\w*)')
+                regex = re.compile('\s*0x(?P<lower>[0-9a-fA-F]*) - 0x(?P<upper>[0-9a-fA-F]*)\s*(?P<name>\w*)')
                 results = regex.findall(report)
                 for res in results:
                     lower, upper, name = res

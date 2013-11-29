@@ -7,6 +7,7 @@
 from crash import Crash
 from analyzer import CrashAnalyzer
 import argparse
+import os
 
 
 parser = argparse.ArgumentParser(prog='iCrashalyzer', description='Analyze iOS crash reports.')
@@ -21,10 +22,11 @@ analyzer = CrashAnalyzer()
 crashes  = []
 curr     = 1
 for entry in args.f:
-    with open(entry, 'r') as file:
-        print("[*] processing file %i of %i" % (curr, len(args.f)))
-        curr += 1
-        crashes.append(analyzer.process(file))
+    if os.path.isfile(entry):
+        with open(entry, 'r') as file:
+            print("[*] processing file %i of %i" % (curr, len(args.f)))
+            curr += 1
+            crashes.append(analyzer.process(file))
 
 if args.unique:
     unique_crashes = []

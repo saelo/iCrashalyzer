@@ -27,7 +27,7 @@ class CrashParser:
     urx = [
        re.compile('^Process:\s*(?P<process>.*) \[(?P<pid>[0-9]*)\]', re.MULTILINE),
        re.compile('^Exception Type:\s*(.*) \((?P<type>.*)\)', re.MULTILINE),
-       re.compile('^Exception Subtype:\s*(.*) at (?P<fa>.*)', re.MULTILINE)
+       re.compile('^Exception (Subtype|Codes):\s*(.*) at (?P<fa>.*)', re.MULTILINE)
           ]
 
     """ Kernel regular expressions """

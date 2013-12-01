@@ -36,7 +36,6 @@ class CrashParser:
        re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE)
           ]
 
-
     def process(self, report):
         crash = Crash()
 
@@ -55,8 +54,12 @@ class CrashParser:
             rx = self.grx + [re.compile('Reason:\s*(?P<process>\w*):')]
         elif 'Kernel version' in report:
             crash.domain = Crash.KERNEL
-            crash.type = Crash.KFAULT       # set type to generic kernel fault
-            rx = self.erx + self.krx
+            if 'WDT timeout' in report:         # basic detection for panics caused by the watchdog timer
+                crash.type = Crash.TIMEOUT
+                rx = self.grx
+            else:
+                crash.type = Crash.KFAULT       # set type to generic kernel fault
+                rx = self.erx + self.krx
         else:
             crash.domain = Crash.USERLAND
             rx = self.erx + self.urx
@@ -66,7 +69,7 @@ class CrashParser:
             match = regex.search(report)
             if match:
                 # add attributes to crash object
-                for key, value in match.groupdict().iteritems():
+                for key, value in match.groupdict().items():
                     setattr(crash, key, value)
             else:
                 print("[!] failed to extract some information, please report this")

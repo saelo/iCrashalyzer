@@ -27,6 +27,8 @@ for entry in args.f:
             print("[*] processing file %i of %i" % (curr, len(args.f)))
             curr += 1
             crashes.append(analyzer.process(file))
+    else:
+        print("[!] could not open file %s, skipping" % entry)
 
 if args.unique:
     unique_crashes = []

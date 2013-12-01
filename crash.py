@@ -52,15 +52,21 @@ class Crash:
 
     def __str__(self):
         if self.type == self.TIMEOUT:
-            return "%s - %s in %s" % (self.domain, self.type, self.process)
-        str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)
-        if self.verbosity > 1:
+            str = "%s - %s" % (self.domain, self.type)
             if self.domain == self.USERLAND:
-                str += "\n    process: %s, " % self.process
-            else:
-                str += "\n    "
-            str += "pc: %s, offset %s from %s" % (self.pc, self.rpc, self.region)
-            str += "\n    %s - %s" % (self.os, self.device)
+                str += " in %s" % self.process
+            if self.verbosity > 1:
+                str += "\n    %s - %s" % (self.os, self.device)
+        else:
+            str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)
+            if self.verbosity > 1:
+                if self.domain == self.USERLAND:
+                    str += "\n    process: %s, " % self.process
+                else:
+                    str += "\n    "
+                str += "pc: %s, offset %s from %s" % (self.pc, self.rpc, self.region)
+                str += "\n    %s - %s" % (self.os, self.device)
+
         if self.verbosity > 2:
             str += "\n    %s -- crash id: %s" % (self.filename, self.id)
         return str

@@ -6,6 +6,8 @@
 # Copyright (c) 2013 Samuel Groß
 #
 
+import re
+
 class Crash:
 
 
@@ -20,8 +22,9 @@ class Crash:
     SIGSEGV = 'SIGSEGV'
     NULLPTR = 'NULLPTR'
     SIGABRT = 'SIGABRT'
-    SIGBUS  = 'SIBBUS'
+    SIGBUS  = 'SIGBUS'
     TIMEOUT = 'TIMEOUT'
+    LOWMEM  = 'LOWMEM'
     KFAULT  = 'KFAULT'      # basically every kernel panic that's not a null pointer dereference
 
     """ Predefined memory regions """
@@ -43,6 +46,14 @@ class Crash:
         self.region   = '-'         # name of the memory region in which the crash occurred
         self.filename = '-'         # name of the crash report file
 
+    def numeric_os(self):
+        """ Return a triple of digits representing the OS version """
+        regex = re.compile('.*OS (\d).(\d).(\d)')
+        match = regex.search(self.os)
+        if match:
+            return match.groups()
+        return ('0', '0', '0')
+
     def __eq__(self, other):
         #
         # two crashes are (very likely) equal if they occurred on the same
@@ -51,7 +62,9 @@ class Crash:
         return self.region == other.region and self.rpc == other.rpc and not self.region == '-' and not self.rpc == '-'
 
     def __str__(self):
-        if self.type == self.TIMEOUT:
+        if self.type == self.LOWMEM:
+            return "%s - %s" % (self.domain, self.type)
+        elif self.type == self.TIMEOUT:
             str = "%s - %s" % (self.domain, self.type)
             if self.domain == self.USERLAND:
                 str += " in %s" % self.process

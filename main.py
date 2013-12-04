@@ -49,7 +49,7 @@ if args.output:
 
 for crash in crashes:
     if out:
-        out.write(str(crash))
+        out.write(str(crash) + '\n')
     else:
         print('\n' + str(crash))
 

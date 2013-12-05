@@ -3,3 +3,4 @@
 
 # ignore plist files
 *.plist
+*.xml

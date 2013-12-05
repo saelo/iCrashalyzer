@@ -6,6 +6,7 @@
 
 from crash import Crash
 from analyzer import CrashAnalyzer
+from report import Report
 import argparse
 import os
 
@@ -18,15 +19,20 @@ parser.add_argument('-v', '--verbose', action='count', help='increases the verbo
 args = parser.parse_args()
 
 
-analyzer = CrashAnalyzer()
-crashes  = []
-curr     = 1
+crashalyzer = CrashAnalyzer()
+crashes     = []
+curr        = 1
+out         = None
 for entry in args.f:
     if os.path.isfile(entry):
         with open(entry, 'r') as file:
             print("[*] processing file %i of %i" % (curr, len(args.f)))
             curr += 1
-            crashes.append(analyzer.process(file))
+            report = Report(file)
+            if not report.is_usable():
+                print("[!] unusable report: %s, skipping" % report.filename)
+            else:
+                crashes.append(crashalyzer.analyze_report(report))
     else:
         print("[!] could not open file %s, skipping" % entry)
 
@@ -43,7 +49,6 @@ if args.unique:
 if args.verbose:
     Crash.verbosity += args.verbose
 
-out = None
 if args.output:
     out = open(args.output, 'w+')
 

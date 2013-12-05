@@ -7,7 +7,6 @@
 #
 
 from crash import Crash
-from parser import CrashParser
 import re
 
 class CrashAnalyzer:
@@ -15,13 +14,33 @@ class CrashAnalyzer:
 
     NULLPTR_THRESHOLD = 0x1000
 
-    parser = CrashParser()
+    def analyze_report(self, report):
+        """Analyze a report and return a crash object containing the information from it."""
+        #
+        # Extract information from the report and store it in a crash object.
+        #
+        crash = Crash()
+        crash.filename = report.filename
 
-    def process(self, file):
-        report = file.read()
-        crash = self.parser.process(report)
-        crash.filename = file.name
+        for key, value in report.extract_all().items():
+            setattr(crash, key, value)
 
+        # set additional properties
+        if report.is_kernel_crash():
+            crash.domain = Crash.KERNEL
+            crash.type = Crash.KFAULT
+            crash.region = Crash.REGION_KERNEL
+            if crash.os_version()[0] < 6:
+                crash.kbase = '0x80002000'      # no KASLR before iOS 6, use default kernel base
+        else:
+            crash.domain = Crash.USERLAND
+        if report.is_wdt_timeout() or report.is_uland_timeout():
+            crash.type = Crash.TIMEOUT
+        if report.is_lowmem_crash():
+            crash.type = Crash.LOWMEM
+
+        #
+        # Analyze the crash further.
         # check for null pointer dereference
         try:
             if int(crash.fa, 16) < self.NULLPTR_THRESHOLD:
@@ -45,10 +64,9 @@ class CrashAnalyzer:
         else:
             try:
                 # try to find memory region
+                mappings = report.get_mappings()
                 pc = int(crash.pc, 16)
-                regex = re.compile('\s*0x(?P<lower>[0-9a-fA-F]*) - 0x(?P<upper>[0-9a-fA-F]*)\s*(?P<name>\w*)')
-                results = regex.findall(report)
-                for res in results:
+                for res in mappings:
                     lower, upper, name = res
                     if int(lower, 16) <= pc <= int(upper, 16):
                         # mapped region found
@@ -56,5 +74,10 @@ class CrashAnalyzer:
                         crash.region = name
             except ValueError:
                 pass
+
+        # check if everything was extracted sucessfully
+        # this is only done to detect changes in the crash report format
+        if not crash.is_complete():
+            print('[!] failed to extract some information, please report this')
 
         return crash

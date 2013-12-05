@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #coding: UTF-8
 #
-# Defines the crash class, represents a crash.
+# Defines the crash class, representing a crash.
 #
 # Copyright (c) 2013 Samuel Groß
 #
@@ -9,26 +9,29 @@
 import re
 
 class Crash:
+    """Represents a crash.
 
-
-    """ Verbosity level - determines how much str(crash) spits out """
+    Attributes:
+        verbosity   verbosity level
+        KERNEL      constant representing a kernel crash
+        USERLAND    constant representing a userland crash
+    """
     verbosity = 1
 
-    """ Crash domain """
     KERNEL   = 'KERNEL'
     USERLAND = 'USERLAND'
 
-    """ Crash types """
     SIGSEGV = 'SIGSEGV'
-    NULLPTR = 'NULLPTR'
     SIGABRT = 'SIGABRT'
     SIGBUS  = 'SIGBUS'
+    SIGTRAP = 'SIGTRAP'
+    NULLPTR = 'NULLPTR'
     TIMEOUT = 'TIMEOUT'
     LOWMEM  = 'LOWMEM'
     KFAULT  = 'KFAULT'      # basically every kernel panic that's not a null pointer dereference
 
-    """ Predefined memory regions """
     REGION_KERNEL = "kernel base"
+
 
     def __init__(self):
         # initialize available fields, mainly as a reference
@@ -46,19 +49,37 @@ class Crash:
         self.region   = '-'         # name of the memory region in which the crash occurred
         self.filename = '-'         # name of the crash report file
 
-    def numeric_os(self):
-        """ Return a triple of digits representing the OS version """
+    def os_version(self):
+        """Return a triple of integers representing the OS version.
+
+        The triple will consist of the major, the minor and the patchlevel version,
+        usually found in this format: iOS 6.1.3."""
         regex = re.compile('.*OS (\d).(\d).(\d)')
         match = regex.search(self.os)
         if match:
-            return match.groups()
-        return ('0', '0', '0')
+            maj, min, patch =  match.groups()
+            return (int(maj), int(min), int(patch))
+        return (0, 0, 0)
+
+    def is_complete(self):
+        """Return true if this crash contains all needed information."""
+        res = not (self.id == '-' or self.os == '-' or self.device == '-' or self.filename == '-' or self.type == '-')
+        if self.domain == self.KERNEL:
+            res &= not self.kbase == '-'
+        else:
+            if not self.type == self.LOWMEM:
+                res &= not self.process == '-'
+        if not (self.type == self.TIMEOUT or self.type == self.LOWMEM or self.type == self.SIGABRT or self.type == self.SIGTRAP):
+            res &= not (self.region == '-' or self.fa == '-' or self.pc == '-' or self.rpc == '-')
+
+        return res
 
     def __eq__(self, other):
-        #
-        # two crashes are (very likely) equal if they occurred on the same
-        # offset from the same memory region
-        #
+        """Return true if the two crashes are equal.
+
+        Two crashes are (very likely) equal if they occurred on the same
+        offset from the same memory region.
+        """
         return self.region == other.region and self.rpc == other.rpc and not self.region == '-' and not self.rpc == '-'
 
     def __str__(self):

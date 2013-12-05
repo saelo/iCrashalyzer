@@ -16,6 +16,7 @@ parser.add_argument('f', nargs='+', metavar='file', help='file(s) to analyze')
 parser.add_argument('-o', '--output', metavar='file', help='write the result to a file instead of stdout')
 parser.add_argument('-u', '--unique', action='store_true', help='only output unique crashes')
 parser.add_argument('-v', '--verbose', action='count', help='increases the verbosity level')
+parser.add_argument('-a', '--all', action='store_true', help='output all extracted information')
 args = parser.parse_args()
 
 
@@ -48,6 +49,9 @@ if args.unique:
 
 if args.verbose:
     Crash.verbosity += args.verbose
+
+if args.all:
+    Crash.output_all = True
 
 if args.output:
     out = open(args.output, 'w+')

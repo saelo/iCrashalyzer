@@ -9,14 +9,10 @@
 import re
 
 class Crash:
-    """Represents a crash.
 
-    Attributes:
-        verbosity   verbosity level
-        KERNEL      constant representing a kernel crash
-        USERLAND    constant representing a userland crash
-    """
-    verbosity = 1
+
+    verbosity  = 1          # determines how much information will be returned by the __str__ method
+    output_all = False      # if set to true the string representation of this crash will simply list all properties
 
     KERNEL   = 'KERNEL'
     USERLAND = 'USERLAND'
@@ -83,6 +79,13 @@ class Crash:
         return self.region == other.region and self.rpc == other.rpc and not self.region == '-' and not self.rpc == '-'
 
     def __str__(self):
+        if self.output_all:
+            str = ""
+            for key, value in vars(self).items():
+                if not key.startswith("_") and not key.isupper():
+                    str += "%s: %s\n" % (key, value)
+            return str
+
         if self.type == self.LOWMEM:
             return "%s - %s" % (self.domain, self.type)
         elif self.type == self.TIMEOUT:

@@ -59,14 +59,21 @@ class Crash:
 
     def is_complete(self):
         """Return true if this crash contains all needed information."""
-        res = not (self.id == '-' or self.os == '-' or self.device == '-' or self.filename == '-' or self.type == '-')
+        res = not (self.id == '-' or self.os == '-' or self.device == '-' or
+                   self.filename == '-' or self.type == '-')
         if self.domain == self.KERNEL:
             res &= not self.kbase == '-'
         else:
             if not self.type == self.LOWMEM:
                 res &= not self.process == '-'
-        if not (self.type == self.TIMEOUT or self.type == self.LOWMEM or self.type == self.SIGABRT or self.type == self.SIGTRAP):
-            res &= not (self.region == '-' or self.fa == '-' or self.pc == '-' or self.rpc == '-')
+        if not (self.type == self.TIMEOUT or self.type == self.LOWMEM or
+                self.type == self.SIGABRT or self.type == self.SIGTRAP):
+            # if pc == fa then the process tried to execute invalid memory
+            # in this case no relative pc (and region) can be determined
+            if not self.pc == self.fa:
+                res &= not (self.region == '-' or self.fa == '-' or self.pc == '-' or self.rpc == '-')
+            else:
+                res &= not self.pc == '-'
 
         return res
 
@@ -80,30 +87,37 @@ class Crash:
 
     def __str__(self):
         if self.output_all:
-            str = ""
+            str = ''
             for key, value in vars(self).items():
-                if not key.startswith("_") and not key.isupper():
+                if not key.startswith('_') and not key.isupper():
                     str += "%s: %s\n" % (key, value)
             return str
 
         if self.type == self.LOWMEM:
             return "%s - %s" % (self.domain, self.type)
+
         elif self.type == self.TIMEOUT:
             str = "%s - %s" % (self.domain, self.type)
             if self.domain == self.USERLAND:
                 str += " in %s" % self.process
             if self.verbosity > 1:
                 str += "\n    %s - %s" % (self.os, self.device)
+
         else:
-            str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch, self.type, self.fa)
+            str = "%s - %s, type: %s, faulting address: %s" % (self.domain, self.arch,
+                # if the crash type is a SIGTRAP (breakpoint) display address of BREAKPOINT (pc) as faulting address
+                    self.type, self.fa if not self.type == self.SIGTRAP else self.pc)
             if self.verbosity > 1:
                 if self.domain == self.USERLAND:
                     str += "\n    process: %s, " % self.process
                 else:
                     str += "\n    "
-                str += "pc: %s, offset %s from %s" % (self.pc, self.rpc, self.region)
+                str += "pc: %s" % (self.pc)
+                if not self.pc == self.fa:
+                    str += ", offset %s from %s" % (self.rpc, self.region)
                 str += "\n    %s - %s" % (self.os, self.device)
 
         if self.verbosity > 2:
             str += "\n    %s -- crash id: %s" % (self.filename, self.id)
+
         return str

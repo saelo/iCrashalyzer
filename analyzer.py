@@ -30,8 +30,11 @@ class CrashAnalyzer:
             crash.domain = Crash.KERNEL
             crash.type = Crash.KFAULT
             crash.region = Crash.REGION_KERNEL
-            if crash.os_version()[0] < 6:
-                crash.kbase = '0x80002000'      # no KASLR before iOS 6, use default kernel base
+            if crash.kbase == '-':
+                # if the kernel base could not be extracted assume the default one
+                # this will be the case for all crashes from devices before iOS 6
+                # as there was no KASLR before that
+                crash.kbase = '0x80002000'
         else:
             crash.domain = Crash.USERLAND
         if report.is_wdt_timeout() or report.is_uland_timeout():

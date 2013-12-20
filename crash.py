@@ -45,18 +45,6 @@ class Crash:
         self.region   = '-'         # name of the memory region in which the crash occurred
         self.filename = '-'         # name of the crash report file
 
-    def os_version(self):
-        """Return a triple of integers representing the OS version.
-
-        The triple will consist of the major, the minor and the patchlevel version,
-        usually found in this format: iOS 6.1.3."""
-        regex = re.compile('.*OS (\d).(\d).(\d)')
-        match = regex.search(self.os)
-        if match:
-            maj, min, patch =  match.groups()
-            return (int(maj), int(min), int(patch))
-        return (0, 0, 0)
-
     def is_complete(self):
         """Return true if this crash contains all needed information."""
         res = not (self.id == '-' or self.os == '-' or self.device == '-' or
@@ -114,7 +102,7 @@ class Crash:
                     str += "\n    "
                 str += "pc: %s" % (self.pc)
                 if not self.pc == self.fa:
-                    str += ", offset %s from %s" % (self.rpc, self.region)
+                    str += ", offset %s from %s" % (self.rpc, self.region if not self.domain == self.KERNEL else self.kbase)
                 str += "\n    %s - %s" % (self.os, self.device)
 
         if self.verbosity > 2:

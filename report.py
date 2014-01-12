@@ -22,7 +22,7 @@ class Report:
             'ufa'     : re.compile('^Exception (Subtype|Codes):\s*(.*) at (?P<fa>.*)', re.MULTILINE),
             'kbase'   : re.compile('^Kernel text base: (?P<kbase>[0-9a-fA-Fx]*)', re.MULTILINE),
             'kfa'     : re.compile('^.*far: (?P<fa>[0-9a-fA-Fx]*)', re.MULTILINE),
-            'procto'  : re.compile('Reason:\s*(?P<process>\w*):', re.MULTILINE)             # process in timeout crashes
+            'procto'  : re.compile('Reason:\s*(?P<process>[A-Za-z0-9\.]*)', re.MULTILINE)             # process in timeout crashes
          }
 
     def __init__(self, file):
@@ -58,13 +58,13 @@ class Report:
         return not 'CRC ERR' in self._raw
 
     def is_kernel_crash(self):
-        return 'iBoot version' in self._raw
+        return 'panic' in self._raw
 
     def is_wdt_timeout(self):
         return 'WDT timeout' in self._raw
 
     def is_uland_timeout(self):
-        return 'RPCTimeout message received to terminate' in self._raw
+        return 'RPCTimeout message received to terminate' in self._raw or 'failed to resume in time' in self._raw
 
     def is_lowmem_crash(self):
         return 'Largest process' in self._raw
